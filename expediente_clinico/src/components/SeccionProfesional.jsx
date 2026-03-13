@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useRef } from "react";
 
 // ============================================================
 // SECCIÓN 1: Datos del Profesional
@@ -6,31 +6,33 @@ import { useState, useRef } from "react";
 // ============================================================
 
 export default function SeccionProfesional({ datos = {}, onChange }) {
-  const [firma, setFirma] = useState(null);
-  const [logo, setLogo] = useState(null);
   const logoInputRef = useRef(null);
 
   // Maneja cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (onChange) {
-      onChange({ ...datos, [name]: value });
-    }
+    if (onChange) onChange({ ...datos, [name]: value });
   };
 
-  // Maneja la subida del logo
+  // Guarda el logo como base64 DENTRO de datos (para que llegue al PDF)
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (ev) => setLogo(ev.target.result);
+      reader.onload = (ev) => {
+        if (onChange) onChange({ ...datos, logo: ev.target.result });
+      };
       reader.readAsDataURL(file);
     }
   };
 
+  const quitarLogo = () => {
+    if (onChange) onChange({ ...datos, logo: null });
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-md p-6 mb-6 border border-slate-100">
-      
+
       {/* Encabezado de sección */}
       <div className="flex items-center gap-2 mb-6">
         <div className="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center text-white text-sm">
@@ -40,11 +42,10 @@ export default function SeccionProfesional({ datos = {}, onChange }) {
       </div>
 
       <div className="flex gap-6">
-        
+
         {/* Columna izquierda: formulario */}
         <div className="flex-1 space-y-4">
 
-          {/* Nombre del terapeuta */}
           <div>
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
               Nombre del Terapeuta
@@ -59,7 +60,6 @@ export default function SeccionProfesional({ datos = {}, onChange }) {
             />
           </div>
 
-          {/* Especialidad y Cédula */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
@@ -89,7 +89,6 @@ export default function SeccionProfesional({ datos = {}, onChange }) {
             </div>
           </div>
 
-          {/* Institución */}
           <div>
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
               Institución
@@ -104,7 +103,6 @@ export default function SeccionProfesional({ datos = {}, onChange }) {
             />
           </div>
 
-          {/* Dirección y Contacto */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
@@ -142,11 +140,10 @@ export default function SeccionProfesional({ datos = {}, onChange }) {
             onClick={() => logoInputRef.current.click()}
             className="w-28 h-28 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-teal-400 hover:bg-teal-50 transition overflow-hidden"
           >
-            {logo ? (
-              <img src={logo} alt="Logo" className="w-full h-full object-cover rounded-xl" />
+            {datos.logo ? (
+              <img src={datos.logo} alt="Logo" className="w-full h-full object-cover rounded-xl" />
             ) : (
               <>
-                {/* Ícono de huella (decorativo) */}
                 <svg className="w-10 h-10 text-slate-300 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M12 11c0-1.1.9-2 2-2s2 .9 2 2v1m-4-1c0-1.1-.9-2-2-2s-2 .9-2 2v1m0 0v3a4 4 0 008 0v-3" />
@@ -162,9 +159,9 @@ export default function SeccionProfesional({ datos = {}, onChange }) {
             onChange={handleLogoUpload}
             className="hidden"
           />
-          {logo && (
+          {datos.logo && (
             <button
-              onClick={() => setLogo(null)}
+              onClick={quitarLogo}
               className="text-xs text-red-400 hover:text-red-600 transition"
             >
               Quitar logo
@@ -172,46 +169,6 @@ export default function SeccionProfesional({ datos = {}, onChange }) {
           )}
         </div>
 
-      </div>
-    </div>
-  );
-}
-
-
-// ============================================================
-// DEMO: Cómo usar el componente (puedes borrar esto después)
-// ============================================================
-export function Demo() {
-  const [datosProfesional, setDatosProfesional] = useState({
-    nombre: "",
-    especialidad: "",
-    cedula: "",
-    institucion: "",
-    direccion: "",
-    contacto: "",
-  });
-
-  return (
-    <div className="min-h-screen bg-slate-50 p-8">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold text-slate-700 mb-6">
-          🗂️ Sistema de Expediente Clínico
-        </h1>
-
-        <SeccionProfesional
-          datos={datosProfesional}
-          onChange={setDatosProfesional}
-        />
-
-        {/* Vista previa de los datos capturados */}
-        <div className="bg-slate-100 rounded-xl p-4 mt-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase mb-2">
-            Vista previa de datos (solo para desarrollo):
-          </p>
-          <pre className="text-xs text-slate-600 whitespace-pre-wrap">
-            {JSON.stringify(datosProfesional, null, 2)}
-          </pre>
-        </div>
       </div>
     </div>
   );

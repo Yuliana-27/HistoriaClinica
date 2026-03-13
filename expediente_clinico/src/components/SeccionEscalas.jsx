@@ -1,176 +1,97 @@
-import { useState } from "react";
-
 // ============================================================
-// SECCIÓN 4: Escalas Psicométricas con Sliders
+// SECCIÓN 4: Psicomotor
 // Sistema de Expediente Clínico Psicológico
 // ============================================================
 
-const ESCALAS = [
-  {
-    nombre: "Escala de Depresión",
-    color: "blue",
-    items: [
-      { id: "tristeza", label: "1. Tristeza" },
-      { id: "pesimismo", label: "2. Pesimismo" },
-      { id: "fracaso", label: "3. Fracaso" },
-      { id: "perdidaPlacer", label: "4. Pérdida de Placer" },
-      { id: "culpa", label: "5. Culpa" },
-      { id: "castigo", label: "6. Castigo" },
-      { id: "disconformidad", label: "7. Disconformidad" },
-    ],
-  },
-  {
-    nombre: "Escala de Ansiedad",
-    color: "amber",
-    items: [
-      { id: "nerviosismo", label: "1. Nerviosismo" },
-      { id: "preocupacion", label: "2. Preocupación" },
-      { id: "tension", label: "3. Tensión" },
-      { id: "miedoPerderControl", label: "4. Miedo a perder el control" },
-      { id: "inquietud", label: "5. Inquietud" },
-    ],
-  },
-];
-
-// Etiquetas según el valor del slider
-const getEtiqueta = (valor) => {
-  if (valor === 0) return { texto: "Nada", color: "text-slate-400" };
-  if (valor <= 1) return { texto: "Mín", color: "text-green-500" };
-  if (valor <= 2) return { texto: "Mod", color: "text-yellow-500" };
-  if (valor <= 3) return { texto: "Alto", color: "text-orange-500" };
-  return { texto: "Sev", color: "text-red-500" };
-};
-
-// Colores del slider según la escala
-const coloresSlider = {
-  blue: "accent-blue-500",
-  amber: "accent-amber-500",
-};
-
-const coloresBadge = {
-  blue: "bg-blue-50 text-blue-700 border-blue-200",
-  amber: "bg-amber-50 text-amber-700 border-amber-200",
-};
-
 export default function SeccionEscalas({ datos = {}, onChange }) {
-  // Actualiza el valor de un ítem específico
-  const handleSlider = (escala, itemId, valor) => {
-    const escalaActual = datos[escala] || {};
-    if (onChange) {
-      onChange({
-        ...datos,
-        [escala]: { ...escalaActual, [itemId]: Number(valor) },
-      });
-    }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (onChange) onChange({ ...datos, [name]: value });
   };
 
-  // Calcula el total de una escala
-  const calcularTotal = (escala) => {
-    const valores = datos[escala] || {};
-    return Object.values(valores).reduce((sum, v) => sum + v, 0);
-  };
+  const RadioSiNo = ({ name, label }) => (
+    <div className="flex items-center gap-3">
+      <span className="text-sm text-slate-600">{label}</span>
+      <div className="flex gap-2">
+        {["Sí", "No"].map((op) => (
+          <label key={op} className="flex items-center gap-1 cursor-pointer">
+            <input type="radio" name={name} value={op}
+              checked={datos[name] === op} onChange={handleChange}
+              className="accent-indigo-500" />
+            <span className="text-sm text-slate-600">{op}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="bg-white rounded-2xl shadow-md p-6 border border-slate-100">
 
       {/* Encabezado */}
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">
-          📊
-        </div>
-        <h2 className="text-lg font-semibold text-slate-700">Escalas Psicométricas</h2>
-        <span className="text-xs font-bold bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full border border-blue-200">
-          SLIDERS 3D
-        </span>
+      <div className="flex items-center gap-2 mb-6">
+        <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm">🏃</div>
+        <h2 className="text-lg font-semibold text-slate-700">Psicomotor</h2>
       </div>
-      <p className="text-xs text-slate-400 mb-6 ml-11">
-        Desliza el control para calificar. Resultados orientativos.
-      </p>
 
-      <div className="space-y-8">
-        {ESCALAS.map((escala) => {
-          const total = calcularTotal(escala.nombre);
-          const etiquetaTotal = getEtiqueta(total);
+      <div className="space-y-5">
 
-          return (
-            <div key={escala.nombre}>
-              {/* Nombre de la escala + total */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-slate-600">
-                    🏷 {escala.nombre}
-                  </span>
-                </div>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${coloresBadge[escala.color]}`}>
-                  {total} ({etiquetaTotal.texto})
-                </span>
-              </div>
-
-              {/* Items con slider */}
-              <div className="space-y-3">
-                {escala.items.map((item) => {
-                  const valor = (datos[escala.nombre] || {})[item.id] || 0;
-                  const etiqueta = getEtiqueta(valor);
-
-                  return (
-                    <div key={item.id} className="flex items-center gap-4">
-                      {/* Label */}
-                      <span className="text-sm text-slate-600 w-44 shrink-0">
-                        {item.label}
-                      </span>
-
-                      {/* Slider */}
-                      <input
-                        type="range"
-                        min={0}
-                        max={4}
-                        step={1}
-                        value={valor}
-                        onChange={(e) =>
-                          handleSlider(escala.nombre, item.id, e.target.value)
-                        }
-                        className={`flex-1 h-2 rounded-full cursor-pointer ${coloresSlider[escala.color]}`}
-                      />
-
-                      {/* Valor + etiqueta */}
-                      <span className={`text-xs font-semibold w-14 text-right ${etiqueta.color}`}>
-                        {valor} {etiqueta.texto}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Separador */}
-              <div className="border-t border-slate-100 mt-4" />
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-
-// ============================================================
-// DEMO
-// ============================================================
-export function Demo() {
-  const [datos, setDatos] = useState({});
-
-  return (
-    <div className="min-h-screen bg-slate-50 p-8">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold text-slate-700 mb-6">
-          🗂️ Sistema de Expediente Clínico
-        </h1>
-        <SeccionEscalas datos={datos} onChange={setDatos} />
-        <div className="bg-slate-100 rounded-xl p-4 mt-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Vista previa:</p>
-          <pre className="text-xs text-slate-600 whitespace-pre-wrap">
-            {JSON.stringify(datos, null, 2)}
-          </pre>
+        {/* Pregunta 1 */}
+        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">1.</p>
+          <div className="flex flex-wrap gap-6">
+            <RadioSiNo name="actualmente_gatea" label="¿Actualmente gatea?" />
+            <RadioSiNo name="se_da_gira_cama" label="¿Se da gira en la cama?" />
+          </div>
         </div>
+
+        {/* Pregunta 2 */}
+        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">2.</p>
+          <div className="flex flex-wrap gap-6">
+            <RadioSiNo name="intenta_mantenerse_pie" label="¿Intenta mantenerse de pie?" />
+            <RadioSiNo name="se_sienta" label="¿Se sienta?" />
+          </div>
+        </div>
+
+        {/* Pregunta 3 */}
+        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">3.</p>
+          <div className="flex flex-wrap gap-6">
+            <RadioSiNo name="se_deja_caer" label="¿Se deja caer rápido?" />
+            <RadioSiNo name="brinca_un_pie" label="¿Brinca en un pie?" />
+          </div>
+        </div>
+
+        {/* Pregunta 4 */}
+        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">4. ¿Presenta alguna molestia física?</p>
+          <input type="text" name="molestiaFisica" value={datos.molestiaFisica || ""} onChange={handleChange}
+            placeholder="Describe la molestia física si existe..."
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition bg-white" />
+        </div>
+
+        {/* Pregunta 5 */}
+        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">5. ¿Camina de alguna manera extraña o diferente?</p>
+          <input type="text" name="caminaRaro" value={datos.caminaRaro || ""} onChange={handleChange}
+            placeholder="Describe cómo camina..."
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition bg-white" />
+        </div>
+
+        {/* Pregunta 6 */}
+        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">6. ¿Hace algún tipo de actividad física?</p>
+          <div className="flex items-center gap-6 mb-3">
+            <RadioSiNo name="actividadFisica" label="¿Realiza actividad física?" />
+          </div>
+          {datos.actividadFisica === "Sí" && (
+            <input type="text" name="actividadFisicaCual" value={datos.actividadFisicaCual || ""} onChange={handleChange}
+              placeholder="¿Cuál actividad física realiza?"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition bg-white" />
+          )}
+        </div>
+
       </div>
     </div>
   );
