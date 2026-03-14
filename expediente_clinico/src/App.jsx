@@ -7,6 +7,9 @@ import SeccionEscalas from "./components/SeccionEscalas";
 import SeccionLineaVida from "./components/SeccionLineaVida";
 import SeccionRegistro from "./components/SeccionRegistro";
 import SeccionDiagnostico from "./components/SeccionDiagnostico";
+import EntrevistaConducta from "./EntrevistaConducta";
+import EntrevistaLenguaje from "./EntrevistaLenguaje";
+import EntrevistaPsicologica from "./EntrevistaPsicologica";
 
 const ESTADO_INICIAL = {
   profesional: {},
@@ -26,6 +29,7 @@ function App() {
   const [guardandoConfig, setGuardandoConfig] = useState(false);
   const [mensaje, setMensaje] = useState(null);
   const [vistaLista, setVistaLista] = useState(false);
+  const [tipoEntrevista, setTipoEntrevista] = useState("");
 
   const actualizar = (seccion) => (valor) => {
     setDatos((prev) => ({ ...prev, [seccion]: valor }));
@@ -202,15 +206,16 @@ function App() {
       doc.text(`${profesional.direccion || ""}  ${profesional.contacto || ""}`.trim(), MARGEN + 27, 34);
 
     // Línea decorativa rosa debajo del encabezado
-   
+    doc.setFillColor(247, 168, 192);
+    doc.rect(0, 36, PW, 3, "F");
 
     y = 45;
 
     // Título expediente
-    doc.setFillColor(...LILA)
+    doc.setFillColor(...AMARILLO);
     doc.roundedRect(MARGEN, y, CONTENIDO, 10, 2, 2, "F");
     doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(...NEGRO);
-    doc.text("ENTREVISTA INICIAL DEL PACIENTE", PW / 2, y + 7, { align: "center" });
+    doc.text("EXPEDIENTE CLÍNICO INTEGRAL", PW / 2, y + 7, { align: "center" });
     doc.setFontSize(7.5); doc.setFont("helvetica", "normal"); doc.setTextColor(...GRIS_TEXTO);
     doc.text(`Fecha: ${new Date().toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" })}`, PW - MARGEN, y + 7, { align: "right" });
     y += 15;
@@ -514,13 +519,44 @@ function App() {
     doc.save(`Expediente_${(paciente.nombrePaciente || "Paciente").replace(/ /g, "_")}_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
+  // ── Redirigir a entrevistas específicas ──
+  if (tipoEntrevista === "conducta") {
+    return (
+      <div className="min-h-screen bg-slate-50 p-8">
+        <div className="max-w-5xl mx-auto">
+          <EntrevistaConducta profesional={datos.profesional} onVolver={() => setTipoEntrevista("")} />
+        </div>
+      </div>
+    );
+  }
+
+  if (tipoEntrevista === "lenguaje") {
+    return (
+      <div className="min-h-screen bg-slate-50 p-8">
+        <div className="max-w-5xl mx-auto">
+          <EntrevistaLenguaje profesional={datos.profesional} onVolver={() => setTipoEntrevista("")} />
+        </div>
+      </div>
+    );
+  }
+
+  if (tipoEntrevista === "psicologica") {
+  return (
+    <div className="min-h-screen bg-slate-50 p-8">
+      <div className="max-w-5xl mx-auto">
+        <EntrevistaPsicologica profesional={datos.profesional} onVolver={() => setTipoEntrevista("")} />
+      </div>
+    </div>
+  );
+}
+
   // ══════════════════════════════════════════════════════════
   // VISTA LISTA
   // ══════════════════════════════════════════════════════════
   if (vistaLista) {
     return (
       <div className="min-h-screen bg-slate-50 p-8">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-slate-700">📋 Expedientes Guardados</h1>
             <button onClick={() => setVistaLista(false)} className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
@@ -557,12 +593,15 @@ function App() {
   // ══════════════════════════════════════════════════════════
   return (
     <div className="min-h-screen bg-slate-50 p-8">
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6">
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-slate-700">🗂️ Expediente Clínico Entrevista Inicial</h1>
-            <select className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 transition">
+            <h1 className="text-2xl font-bold text-slate-700">🗂️ Sistema de Expediente Clínico</h1>
+            <select
+              value={tipoEntrevista}
+              onChange={(e) => setTipoEntrevista(e.target.value)}
+              className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 transition">
               <option value="">-- Tipo de Entrevista --</option>
               <option value="conducta">Entrevista Terapia de Conducta</option>
               <option value="lenguaje">Entrevista Terapia de Lenguaje</option>
